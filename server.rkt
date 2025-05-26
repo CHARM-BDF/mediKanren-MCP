@@ -36,7 +36,7 @@
 (define (job-failure x)
   (response/xexpr x))
 
-(define timeout (* 6 1000)) ;; in miliseconds
+(define timeout (* 10 1000)) ;; in miliseconds
 (define max-waiting (+ timeout 500))
 
 (define (thunk-with-timeout thunk)
@@ -188,6 +188,12 @@
     (cdr (assoc 'e1 params)) (cdr (assoc 'e2 params)) (cdr (assoc 'e3 params))
     (let ((x (assoc 'autogrow params))) (if x (cdr x) #f)))))
 
+(define (synonyms x)
+  (set->list
+   (get-n-descendent-curies*-in-db
+    (curies->synonyms-in-db (list x))
+    10000)))
+
 (define (generate-response e1 e2 e3 autogrow?)
   (displayln (format "Handling expression ~a ~a ~a (autogrow?:~a)" e1 e2 e3 autogrow?))
   (flush-output)
@@ -199,11 +205,7 @@
                   all-predicates
                   (get-non-deprecated-mixed-ins-and-descendent-predicates*-in-db
                    (if (string=? "biolink:treats" e2) '("biolink:treats" "biolink:treats_or_applied_or_studied_to_treat") (list e2)))))))
-	(b
-	 (set->list
-          (get-n-descendent-curies*-in-db
-           (curies->synonyms-in-db (list e3))
-           10000))))
+	(b (synonyms e3)))
     (let* ((q
             (cond
 	     ((string=? "X->Known" e1)
@@ -243,20 +245,18 @@
               (if (string=? "" e2)
                   all-predicates
                   (get-non-deprecated-mixed-ins-and-descendent-predicates*-in-db
-                   (if (string=? "biolink:treats" e2) '("biolink:treats" "biolink:treats_or_applied_or_studied_to_treat") (list e2)))))))
-        (subjects (entity-query-set subject))
-        (objects (entity-query-set object)))
+                   (if (string=? "biolink:treats" e2) '("biolink:treats" "biolink:treats_or_applied_or_studied_to_treat") (list e2))))))))
     (let* ((q
             (cond
 	     ((entity-query-unknown? subject)
 	      (write 'query:X->Known-scored)
-	      (lambda (bucket*) (query:X->Known-scored subjects b2 (list object) bucket*)))
+	      (lambda (bucket*) (query:X->Known-scored (to-unknown subject) b2 (synonyms object) bucket*)))
 	     ((entity-query-unknown? object)
 	      (write 'query:Known->X-scored)
-	      (lambda (bucket*) (query:Known->X-scored (list subject) b2 objects bucket*)))
+	      (lambda (bucket*) (query:Known->X-scored (synonyms subject) b2 (to-unknown object) bucket*)))
 	     (else
 	      (write 'known)
-	      (lambda (bucket*) (query:Known->X-scored subjects b2 objects bucket*)))))
+	      (lambda (bucket*) (query:Known->X-scored (list subject) b2 (list object) bucket*)))))
            (r
             (if q
                 (if autogrow? (auto-grow q TOP_BUCKET_NUMBERS_AUTOGROW 100) (q TOP_BUCKET_NUMBERS))
@@ -300,6 +300,17 @@
    ((string-prefix? x "biolink:")
     #t)
    (else #f)))
+
+(define (to-unknown x)
+  (cond
+   ((empty? x)
+    #f)
+   ((string-prefix? x "biolink:")
+    (set->list
+     (get-non-deprecated/mixin/abstract-ins-and-descendent-classes*-in-db
+      (list x))))
+   (else
+    (list x))))
 
 (define (generate-query1-response subject predicate object)
   (displayln (format "Handling query1 expression ~a ~a ~a" subject predicate object))
