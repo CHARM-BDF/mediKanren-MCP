@@ -149,6 +149,7 @@
    (("category") (w handle-get-category-request))
    (("query") (w handle-query-request))
    (("query1") (w handle-query1-request))
+   (("query0") (w handle-query0-request))
    (else (w handle-index-request))))
 
 (define (handle-index-request request)
@@ -220,6 +221,46 @@
       (display "RETURNING")
       (set! r (cleanup r))
       (write r)
+      (displayln "")
+      (flush-output)
+      r)))
+
+(define (handle-query0-request request)
+  (define params (request-bindings request))
+  (response/jsexpr
+   (generate-query0-response
+    (cdr (assoc 'subject params)) (cdr (assoc 'predicate params)) (cdr (assoc 'object params))
+    (let ((x (assoc 'autogrow params))) (if x (cdr x) #f)))))
+
+(define (generate-query0-response subject e2 object autogrow?)
+  (displayln (format "Handling expression ~a ~a ~a (autogrow?:~a)" subject e2 object autogrow?))
+  (let ((b2
+         (set->list
+          (if (string-contains? e2 " ")
+              (string-split e2)
+              (if (string=? "" e2)
+                  all-predicates
+                  (get-non-deprecated-mixed-ins-and-descendent-predicates*-in-db
+                   (if (string=? "biolink:treats" e2) '("biolink:treats" "biolink:treats_or_applied_or_studied_to_treat") (list e2)))))))
+        (subjects (entity-query-set subject))
+        (objects (entity-query-set object)))
+    (let* ((q
+            (cond
+	     ((entity-query-unknown? subject)
+	      (write 'query:X->Known-scored)
+	      (lambda (bucket*) (query:X->Known-scored subjects b2 objects bucket*)))
+	     ((entity-query-unknown? object)
+	      (write 'query:Known->X-scored)
+	      (lambda (bucket*) (query:Known->X-scored subjects b2 objects bucket*)))
+	     (else
+	      (write 'known)
+	      (lambda (bucket*) (query:Known->X-scored subjects b2 objects bucket*)))))
+           (r
+            (if q
+                (if autogrow? (auto-grow q TOP_BUCKET_NUMBERS_AUTOGROW 100) (q TOP_BUCKET_NUMBERS))
+                '())))
+      (display "RETURNING")
+      (set! r (cleanup r))
       (displayln "")
       (flush-output)
       r)))
