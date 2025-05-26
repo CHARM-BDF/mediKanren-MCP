@@ -233,10 +233,10 @@
   (response/jsexpr
    (generate-query0-response
     (cdr (assoc 'subject params)) (cdr (assoc 'predicate params)) (cdr (assoc 'object params))
-    (let ((x (assoc 'autogrow params))) (if x (cdr x) #f)))))
+    (let ((x (assoc 'nogrow params))) (if x (cdr x) #f)))))
 
-(define (generate-query0-response subject e2 object autogrow?)
-  (displayln (format "Handling query0 expression ~a ~a ~a (autogrow?:~a)" subject e2 object autogrow?))
+(define (generate-query0-response subject e2 object nogrow?)
+  (displayln (format "Handling query0 expression ~a ~a ~a (nogrow?:~a)" subject e2 object nogrow?))
   (flush-output)
   (let ((b2
          (set->list
@@ -259,7 +259,7 @@
 	      (lambda (bucket*) (query:Known->X-scored (list subject) b2 (list object) bucket*)))))
            (r
             (if q
-                (if autogrow? (auto-grow q TOP_BUCKET_NUMBERS_AUTOGROW 100) (q TOP_BUCKET_NUMBERS))
+                (if nogrow? (q TOP_BUCKET_NUMBERS) (auto-grow q TOP_BUCKET_NUMBERS_AUTOGROW 100))
                 '())))
       (display "RETURNING")
       (set! r (cleanup r))
