@@ -190,6 +190,7 @@
 
 (define (generate-response e1 e2 e3 autogrow?)
   (displayln (format "Handling expression ~a ~a ~a (autogrow?:~a)" e1 e2 e3 autogrow?))
+  (flush-output)
   (let ((b2
          (set->list
           (if (string-contains? e2 " ")
@@ -233,7 +234,8 @@
     (let ((x (assoc 'autogrow params))) (if x (cdr x) #f)))))
 
 (define (generate-query0-response subject e2 object autogrow?)
-  (displayln (format "Handling expression ~a ~a ~a (autogrow?:~a)" subject e2 object autogrow?))
+  (displayln (format "Handling query0 expression ~a ~a ~a (autogrow?:~a)" subject e2 object autogrow?))
+  (flush-output)
   (let ((b2
          (set->list
           (if (string-contains? e2 " ")
@@ -301,6 +303,7 @@
 
 (define (generate-query1-response subject predicate object)
   (displayln (format "Handling query1 expression ~a ~a ~a" subject predicate object))
+  (flush-output)
   (let ((predicates
          (set->list
           (if (empty? predicate)
