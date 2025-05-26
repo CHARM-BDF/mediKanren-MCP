@@ -248,10 +248,10 @@
             (cond
 	     ((entity-query-unknown? subject)
 	      (write 'query:X->Known-scored)
-	      (lambda (bucket*) (query:X->Known-scored subjects b2 objects bucket*)))
+	      (lambda (bucket*) (query:X->Known-scored subjects b2 object bucket*)))
 	     ((entity-query-unknown? object)
 	      (write 'query:Known->X-scored)
-	      (lambda (bucket*) (query:Known->X-scored subjects b2 objects bucket*)))
+	      (lambda (bucket*) (query:Known->X-scored subject b2 objects bucket*)))
 	     (else
 	      (write 'known)
 	      (lambda (bucket*) (query:Known->X-scored subjects b2 objects bucket*)))))
