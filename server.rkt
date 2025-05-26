@@ -161,6 +161,7 @@
                (ul
                 (li "curie2name?curie=... " (a ([href "/curie2name?curie=DRUGBANK:DB12411"]) "(example)"))
                 (li "query?e1=...&e2=...&e3=... " (a ([href "/query?e1=Known->X&e2=biolink:treats&e3=DRUGBANK:DB12411"]) "(example)"))
+                (li "query0?subject=...&predicate=...&object=... " (a ([href "/query0?subject=DRUGBANK:DB12411&predicate=biolink:treats&object="]) "(example with autogrow)"))
                 (li "query1?subject=...&predicate=...&object=... " (a ([href "/query1?subject=DRUGBANK:DB12411&predicate=biolink:treats&object="]) "(example)")))))
 ))))
 
