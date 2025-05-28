@@ -270,7 +270,7 @@
 
 
 (define (maybe-cdr x)
-  (and x (cdr x)))
+  (if x (cdr x) ""))
 
 (define (handle-query1-request request)
   (define params (request-bindings request))
