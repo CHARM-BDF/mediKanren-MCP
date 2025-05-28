@@ -233,7 +233,7 @@
   (define params (request-bindings request))
   (response/jsexpr
    (generate-query0-response
-    (cdr (assoc 'subject params)) (cdr (assoc 'predicate params)) (cdr (assoc 'object params))
+    (maybe-cdr (assoc 'subject params)) (maybe-cdr (assoc 'predicate params)) (maybe-cdr (assoc 'object params))
     (let ((x (assoc 'nogrow params))) (if x (cdr x) #f)))))
 
 (define (generate-query0-response subject e2 object nogrow?)
