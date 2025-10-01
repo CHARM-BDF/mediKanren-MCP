@@ -2,6 +2,10 @@
 
 ## [Setup](INSTALL.md)
 
+## Installation
+
+Install Racket. Then install dependencies: `raco pkg install yaml`.
+
 ## Run
 
 Run `racket server.rkt`.
